@@ -1,42 +1,30 @@
-//calling samples.json file
+//calling from samples.json and appending data to option
 
-async function getData() {
-    const response = await fetch("./samples.json");
-    const data = await response.json();
-    console.log(data);
-}
+d3.json('samples.json').then(({names}) =>{
+    names.forEach(name => {
+        d3.select('select').append('option').text(name)
+    });
+    showCharts();
+});
 
-const id = Object.values(data.id)
-const eth = Object.values(data.ethnicity)
-const age = Object.values(data.age)
-const gender = Object.values(data.gender)
-const location = Object.values(data.location)
-const bbtype = Object.values(data.bbtype)
-const wfreq = Object.values(data.wfreq)
-
-// document.querySelector("#selDataset").addEventListener("select", event => {
-//     }):
-
-let dropDown = document.getElementById("selDataset")
-let defaultOption = document.createElement('option');
-defaultOption.text = 'Choose Text Subject ID';
-
-// Show charts when option is selected in dropdown
 function optionChanged() {
     showCharts();
 };
-//On Select, filter for the Demographic infomation we want. 
+//On Select filter for the Demo info we want. 
 function showCharts() {
     let sel = d3.select('select').node().value
     d3.json('samples.json').then(({metadata,samples})=>{
         let meta = metadata.filter(obj=>obj.id == sel)[0];
         let sample = samples.filter(obj=>obj.id == sel)[0];
         console.log(meta);
+// Make sure to clear Demograhic info panel before selecting new Subject ID
+        d3.select('.panel-body').html('');
+        Object.entries(meta).forEach(([key,value])=>{
+            d3.select('.panel-body').append('h4').text(key.toUpperCase()+': '+value)
+        })
 
-
-
-         // Horizontal bar
-         var data = [
+        // Horizontal bar
+        var data = [
             {
               x: sample.otu_ids,
               y: [20, 14, 23],
@@ -138,3 +126,4 @@ function showCharts() {
 
     });
 };
+
