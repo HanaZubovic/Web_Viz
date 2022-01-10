@@ -2,139 +2,126 @@
 
 async function getData() {
     const response = await fetch("./samples.json");
-    const data = await response.json();
+    data = await response.json();
     console.log(data);
+    
+   let dropDown = document.getElementById('selDataset');
+  
+let samples= data.samples
+   // console.log(samples)
+metadata= data.metadata
+   // console.log(metadata)
+names= data.names
+   // console.log(names)
+
+
+   for (let i = 0; i < data.names.length; i++) {
+    let id_names = data.names[i];
+    let option = document.createElement("option");
+    option.textContent = id_names;
+    option.value = id_names;
+    dropDown.appendChild(option);
+    
+  };
+
+
+  dropDown.value = data.names[0];
+  chartBuild(dropDown.value);
+  metaBuild(dropDown.value);
+
 }
 
-const id = Object.values(data.id)
-const eth = Object.values(data.ethnicity)
-const age = Object.values(data.age)
-const gender = Object.values(data.gender)
-const location = Object.values(data.location)
-const bbtype = Object.values(data.bbtype)
-const wfreq = Object.values(data.wfreq)
+function optionChanged(sample) { 
+  chartBuild(sample);
+  metaBuild(sample);
+  
 
-// document.querySelector("#selDataset").addEventListener("select", event => {
-//     }):
-
-let dropDown = document.getElementById("selDataset")
-let defaultOption = document.createElement('option');
-defaultOption.text = 'Choose Text Subject ID';
-
-// Show charts when option is selected in dropdown
-function optionChanged() {
-    showCharts();
 };
-//On Select, filter for the Demographic infomation we want. 
-function showCharts() {
-    let sel = d3.select('select').node().value
-    d3.json('samples.json').then(({metadata,samples})=>{
-        let meta = metadata.filter(obj=>obj.id == sel)[0];
-        let sample = samples.filter(obj=>obj.id == sel)[0];
-        console.log(meta);
+
+function chartBuild(sample){
+  let samples = data.samples;
+  let resultArray = samples.filter(sampleObj => sampleObj.id == sample);
+  let new_sample= resultArray[0]
+  
+  let otu_labels = new_sample.otu_labels;
+  let otu_ids = new_sample.otu_ids;
+  let sample_values = new_sample.sample_values;   
+
+  var topten_values = sample_values.sort((a,b) => b - a).slice(0,10).reverse();
+  var top_labels = otu_labels.slice(0,10);
+  var top_ids = otu_ids.slice(0,10).map(thing => `OTU ${thing}`).reverse();
+  
+      // Create barchart
+      var barchart = [{
+          x: topten_values,
+          y: top_ids,
+          type: "bar",
+          text: top_labels,
+          orientation: "h",   
+      }];
+
+      let layout1 = { 
+          title: "Top Ten Samples",    
+      };
+    
+      Plotly.newPlot("bar", barchart, layout1, {responsive: true}); 
+      
+      var bubble = [{
+        x: otu_ids,
+        y: sample_values,
+        text: otu_labels,
+        type: 'scatter',
+        mode: 'markers',
+        marker: {
+            size: sample_values,
+            color: otu_ids,
+            colorscale: "Earth",
+        }
+    }];
+
+      let layout2 = {
+          title: "Bacteria Per Sample",
+          xaxis: {
+              title: "OTU ID",
+          },
+      };
+
+      Plotly.newPlot("bubble", bubble, layout2, {responsive: true});
+
+ };
+
+function metaBuild(sample){
+  let demoPanel = document.getElementById('sample-metadata');
+  let metadata = data.metadata;
+  var resultArray = metadata.filter(sampleObj => sampleObj.id == sample);
+  var demo_id= resultArray[0]   
+
+  demoPanel.innerHTML = ""; 
+  for(const [key, value] of Object.entries(demo_id)) {
+      let h6 =  document.createElement("h6");
+      demoPanel.append(h6,`${key.toUpperCase()}: ${value}`);
+  };
+  
+
+
+  
+  
+
+  }
+
+// // Bubble Chart
+//     var otu_labels = resultValue.otu_labels;
+//     var otu_ids = resultValue.otu_ids;
+//     var sample_values = resultValue.sample_values;   
+
+
+let data = {}
+
+getData()
 
 
 
-         // Horizontal bar
-         var data = [
-            {
-              x: sample.otu_ids,
-              y: [20, 14, 23],
-              type: 'bar',
-              orientation: 'h'
-            }
-          ];
-          
-          Plotly.newPlot('bar', data);
-        var trace1 = {
-            x: ['Liam', 'Sophie', 'Jacob', 'Mia', 'William', 'Olivia'],
-            y: [8.0, 8.0, 12.0, 12.0, 13.0, 20.0],
-            type: 'bar',
-            text: ['4.17 below the mean', '4.17 below the mean', '0.17 below the mean', '0.17 below the mean', '0.83 above the mean', '7.83 above the mean'],
-            marker: {
-              color: 'rgb(142,124,195)'
-            }
-          };
-          
-          var data = [trace1];
-          
-          var layout = {
-            title: 'Number of Graphs Made this Week',
-            font:{
-              family: 'Raleway, sans-serif'
-            },
-            showlegend: false,
-            xaxis: {
-              tickangle: -45
-            },
-            yaxis: {
-              zeroline: false,
-              gridwidth: 2
-            },
-            bargap :0.05
-          };
-          
-          Plotly.newPlot('myDiv', data, layout);
-          
-        //Gauge Chart
-        var data = [
-            {
-              type: "indicator",
-              mode: "gauge+number+delta",
-              value: 420,
-              title: { text: "Weekly Washing Freq. By Individual", font: { size: 24 } },
-              delta: { reference: 400, increasing: { color: "RebeccaPurple" } },
-              gauge: {
-                axis: { range: [null, 500], tickwidth: 1, tickcolor: "darkblue" },
-                bar: { color: "darkblue" },
-                bgcolor: "white",
-                borderwidth: 2,
-                bordercolor: "gray",
-                steps: [
-                  { range: [0, 250], color: "cyan" },
-                  { range: [250, 400], color: "royalblue" }
-                ],
-                threshold: {
-                  line: { color: "red", width: 4 },
-                  thickness: 0.75,
-                  value: 490
-                }
-              }
-            }
-          ];
-          
-          var layout = {
-            width: 500,
-            height: 400,
-            margin: { t: 25, r: 25, l: 25, b: 25 },
-            paper_bgcolor: "lavender",
-            font: { color: "darkblue", family: "Arial" }
-          };
-          
-          Plotly.newPlot('gauge', data, layout);
 
 
-          //Bubble Chart
-          var trace1 = {
-            x: [1, 2, 3, 4],
-            y: [10, 11, 12, 13],
-            mode: 'markers',
-            marker: {
-              size: [40, 60, 80, 100]
-            }
-          };
-          
-          var data = [trace1];
-          
-          var layout = {
-            title: 'Marker Size',
-            showlegend: false,
-            height: 600,
-            width: 600
-          };
-          
-          Plotly.newPlot('bubble', data, layout);
 
-
-    });
-};
+// };
