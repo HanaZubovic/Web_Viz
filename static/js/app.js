@@ -7,12 +7,12 @@ async function getData() {
     
    let dropDown = document.getElementById('selDataset');
   
-let samples= data.samples
-   // console.log(samples)
-metadata= data.metadata
-   // console.log(metadata)
-names= data.names
-   // console.log(names)
+  let samples= data.samples
+    // console.log(samples)
+  metadata= data.metadata
+    // console.log(metadata)
+  names= data.names
+    // console.log(names)
 
 
    for (let i = 0; i < data.names.length; i++) {
@@ -109,12 +109,6 @@ function metaBuild(sample){
 
   }
 
-// // Bubble Chart
-//     var otu_labels = resultValue.otu_labels;
-//     var otu_ids = resultValue.otu_ids;
-//     var sample_values = resultValue.sample_values;   
-
-
 let data = {}
 
 getData()
@@ -124,4 +118,3 @@ getData()
 
 
 
-// };
